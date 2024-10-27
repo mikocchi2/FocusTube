@@ -1,1 +1,64 @@
 
+<!-- templates/admin.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ email }}</h1>
+
+        <!-- Add New Playlist -->
+        <h2>Add New Playlist</h2>
+        <form action="{{ url_for('add_playlist') }}" method="post">
+            <input type="text" name="name" placeholder="Enter Playlist Name" required>
+            <input type="text" name="playlist_id" placeholder="Enter Playlist ID" required>
+            <button type="submit">Add Playlist</button>
+        </form>
+
+        <h2>Whitelisted Playlists</h2>
+        <ul>
+            {% for playlist in playlists %}
+            <li>
+                {{ playlist.name }}
+                <form action="{{ url_for('remove_playlist') }}" method="post" style="display:inline;">
+                    <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
+                    <button type="submit">Remove</button>
+                </form>
+            </li>
+            {% else %}
+            <li>No playlists added.</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Add New Channel -->
+        <h2>Add New Channel</h2>
+        <form action="{{ url_for('add_channel') }}" method="post">
+            <input type="text" name="channel_name" placeholder="Enter Channel Name" required>
+            <input type="text" name="channel_id" placeholder="Enter Channel ID" required>
+            <button type="submit">Add Channel</button>
+        </form>
+
+        <h2>Whitelisted Channels</h2>
+        <ul>
+            {% for channel in channels %}
+            <li>
+                {{ channel.name }}
+                <form action="{{ url_for('remove_channel') }}" method="post" style="display:inline;">
+                    <input type="hidden" name="channel_id" value="{{ channel.channel_id }}">
+                    <button type="submit">Remove</button>
+                </form>
+            </li>
+            {% else %}
+            <li>No channels added.</li>
+            {% endfor %}
+        </ul>
+
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+</body>
+</html>
