@@ -1,0 +1,35 @@
+{
+    "name": "focus-tube",
+    "version": "1.0.0",
+    "description": "youtube study wrapper",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder"
+    },
+    "devDependencies": {
+        "electron": "^25.9.8",
+        "electron-builder": "^24.6.0"
+    },
+    "build": {
+        "appId": "com.acko.focustube",
+        "productName": "FocusTube",
+        "files": [
+            "**/*"
+        ],
+        "directories": {
+            "buildResources": "assets"
+        },
+        "mac": {
+            "category": "public.app-category.utilities"
+        },
+        "win": {
+            "target": "nsis",
+            "icon": "icon.ico"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
+    }
+}

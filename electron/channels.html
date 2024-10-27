@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Channels - Dark Mode</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include custom styles -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles specific to this page */
+        .channel-item, .video-item {
+            cursor: pointer;
+            background-color: #1f1f1f;
+            color: #ffffff;
+            border: none;
+        }
+        .channel-item:hover, .video-item:hover {
+            background-color: #333333;
+        }
+        .embed-responsive {
+            border: 1px solid #333333;
+        }
+        .form-control {
+            background-color: #1f1f1f;
+            color: #ffffff;
+            border: 1px solid #333333;
+        }
+        .form-control::placeholder {
+            color: #bbbbbb;
+        }
+        #searchInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <a href="index.html" class="btn btn-link text-accent">&larr; Back to Home</a>
+    <h1 class="mb-4">Channels</h1>
+
+    <!-- Channels List -->
+    <ul id="channelsList" class="list-group mb-4"></ul>
+
+    <!-- Search Input -->
+    <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search videos...">
+
+    <!-- Videos List -->
+    <ul id="videosList" class="list-group"></ul>
+
+    <!-- Video Player -->
+    <div class="embed-responsive embed-responsive-16by9 mt-4" style="display:none;" id="videoPlayer">
+        <iframe id="videoIframe" class="embed-responsive-item" src="" allowfullscreen></iframe>
+    </div>
+</div>
+
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>  
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
+
+<script>
+    $(document).ready(function() {
+        const API_KEY = 'AIzaSyA01lk-RJ_l6w-K6xbcfGX_4BkUrsEbUog'; // Replace with your YouTube Data API key
+        let allVideos = [];
+
+        // Fetch channels from your API
+        fetch('https://mikocchi2.pythonanywhere.com/api/channels')
+            .then(response => response.json())
+            .then(data => {
+                const channelsList = $('#channelsList');
+                data.forEach(channel => {
+                    const li = $('<li></li>')
+                        .addClass('list-group-item channel-item')
+                        .text(channel.name)
+                        .attr('data-channel-id', channel.channel_id);
+                    channelsList.append(li);
+                });
+
+                // Add click event to channel items
+                $('.channel-item').click(function() {
+                    const channelId = $(this).attr('data-channel-id');
+                    fetchChannelVideos(channelId);
+                });
+            })
+            .catch(error => console.error('Error fetching channels:', error));
+
+        function fetchChannelVideos(channelId) {
+            // Clear previous data
+            $('#videosList').empty();
+            $('#searchInput').val('');
+            $('#videoPlayer').hide();
+            $('#videoIframe').attr('src', '');
+            allVideos = [];
+            $('#searchInput').hide();
+
+            // Get uploads playlist ID
+            fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${API_KEY}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        const uploadsPlaylistId = data.items[0].contentDetails.relatedPlaylists.uploads;
+                        // Fetch videos from the uploads playlist
+                        fetchVideosFromPlaylist(uploadsPlaylistId);
+                    } else {
+                        alert('No channel found with the provided ID.');
+                    }
+                })
+                .catch(error => console.error('Error fetching channel details:', error));
+        }
+
+        function fetchVideosFromPlaylist(playlistId, pageToken = '') {
+            fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlistId}&key=${API_KEY}&pageToken=${pageToken}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items) {
+                        const videos = data.items.map(item => ({
+                            title: item.snippet.title,
+                            videoId: item.snippet.resourceId.videoId
+                        }));
+                        allVideos = allVideos.concat(videos);
+
+                        // Check if there's a next page
+                        if (data.nextPageToken) {
+                            // Fetch next page
+                            fetchVideosFromPlaylist(playlistId, data.nextPageToken);
+                        } else {
+                            // All videos fetched
+                            displayVideos(allVideos);
+                            $('#searchInput').show();
+                        }
+                    } else {
+                        alert('No videos found in the playlist.');
+                    }
+                })
+                .catch(error => console.error('Error fetching videos from playlist:', error));
+        }
+
+        function displayVideos(videos) {
+            const videosList = $('#videosList');
+            videosList.empty();
+            videos.forEach(video => {
+                const li = $('<li></li>')
+                    .addClass('list-group-item video-item')
+                    .text(video.title)
+                    .attr('data-video-id', video.videoId);
+                videosList.append(li);
+            });
+
+            // Add click event to video items
+            $('.video-item').click(function() {
+                const videoId = $(this).attr('data-video-id');
+                const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                $('#videoIframe').attr('src', embedUrl);
+                $('#videoPlayer').show();
+            });
+        }
+
+        // Search functionality
+        $('#searchInput').on('input', function() {
+            const query = $(this).val().toLowerCase();
+            const filteredVideos = allVideos.filter(video => video.title.toLowerCase().includes(query));
+            displayVideos(filteredVideos);
+        });
+    });
+</script>
+
+</body>
+</html>

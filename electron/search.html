@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  
+    <style>
+        .body{
+            background-color: black;
+        }
+        .video-item {
+            cursor: pointer;
+        }
+        .video-item:hover {
+            background-color: #f0f0f0;
+        }
+        .spinner {
+            margin: 50px auto;
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <a href="index.html" class="btn btn-link">&larr; Back to Home</a>
+    <h1 class="mb-4">Search Results</h1>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center" style="display:none;">
+        <div class="spinner-border text-primary spinner" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p>Searching, please wait...</p>
+    </div>
+
+    <!-- Results List -->
+    <ul id="resultsList" class="list-group" style="display:none;"></ul>
+
+    <!-- Video Player -->
+    <div class="embed-responsive embed-responsive-16by9 mt-4" style="display:none;" id="videoPlayer">
+        <iframe id="videoIframe" class="embed-responsive-item" src="" allowfullscreen></iframe>
+    </div>
+</div>
+
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>  
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
+
+<script>
+    $(document).ready(function() {
+        // Function to get query parameters from the URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const query = getQueryParam('query');
+
+        if (query) {
+            // Check if results are already stored in local storage
+            const cachedResults = localStorage.getItem(query);
+            if (cachedResults) {
+                displayResults(JSON.parse(cachedResults));
+            } else {
+                initiateSearch(query);
+            }
+        } else {
+            alert('No search query provided.');
+        }
+
+        function initiateSearch(query) {
+            // Show loading spinner
+            $('#loadingSpinner').show();
+
+            // Send the search query to /api/search to initiate the search process
+            $.ajax({
+                url: `https://mikocchi2.pythonanywhere.com/api/search`,
+                method: 'GET', // or 'POST' if your API expects a POST request
+                data: { query: query },
+                success: function() {
+                    // Start polling for results
+                    pollForResults(query);
+                },
+                error: function() {
+                    alert('Error initiating search.');
+                    $('#loadingSpinner').hide();
+                }
+            });
+        }
+
+        function pollForResults(query) {
+            // Polling interval in milliseconds
+            const POLL_INTERVAL = 2000;
+
+            const poller = setInterval(function() {
+                $.ajax({
+                    url: 'https://mikocchi2.pythonanywhere.com/api/searchresults',
+                    method: 'GET',
+                    success: function(data) {
+                        if (data && data.results && data.results.length > 0) {
+                            clearInterval(poller);
+                            $('#loadingSpinner').hide();
+
+                            // Save results to local storage
+                            localStorage.setItem(query, JSON.stringify(data.results));
+
+                            displayResults(data.results);
+                        }
+                    },
+                    error: function() {
+                        console.error('Error fetching search results.');
+                    }
+                });
+            }, POLL_INTERVAL);
+        }
+
+        function displayResults(results) {
+            const resultsList = $('#resultsList');
+            resultsList.empty();
+            results.forEach(video => {
+                const li = $('<li></li>')
+                    .addClass('list-group-item video-item')
+                    .text(video.title)
+                    .attr('data-video-id', video.videoId);
+                resultsList.append(li);
+            });
+
+            // Show the results list
+            resultsList.show();
+
+            // Add click event to list items
+            $('.video-item').click(function() {
+                const videoId = $(this).attr('data-video-id');
+                const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                $('#videoIframe').attr('src', embedUrl);
+                $('#videoPlayer').show();
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

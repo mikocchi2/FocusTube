@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Previous Search Results - Dark Mode</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .video-item {
+            cursor: pointer;
+            background-color: #1f1f1f;
+            color: #ffffff;
+            border: none;
+        }
+        .video-item:hover {
+            background-color: #333333;
+        }
+        a.btn-link {
+            color: #bb86fc;
+        }
+        a.btn-link:hover {
+            color: #9b65e6;
+        }
+        .embed-responsive {
+            border: 1px solid #333333;
+        }
+        .spinner {
+            margin: 50px auto;
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <a href="index.html" class="btn btn-link">&larr; Back to Home</a>
+    <h1 class="mb-4">Previous Search Results</h1>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center" style="display:none;">
+        <div class="spinner-border text-primary spinner" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p>Loading search results...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="alert alert-danger" role="alert" style="display:none;">
+        Failed to load search results. Please try again later.
+    </div>
+
+    <!-- Query Display -->
+    <h3 id="searchQuery" class="mb-4" style="display:none;"></h3>
+
+    <!-- Results List -->
+    <ul id="resultsList" class="list-group" style="display:none;"></ul>
+
+    <!-- Video Player -->
+    <div class="embed-responsive embed-responsive-16by9 mt-4" style="display:none;" id="videoPlayer">
+        <iframe id="videoIframe" class="embed-responsive-item" src="" allowfullscreen></iframe>
+    </div>
+</div>
+
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>  
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
+
+<script>
+    $(document).ready(function() {
+        const API_ENDPOINT = 'https://mikocchi2.pythonanywhere.com/api/searchresults';
+
+        // Show the loading spinner
+        $('#loadingSpinner').show();
+
+        // Fetch search results from the API
+        $.ajax({
+            url: API_ENDPOINT,
+            method: 'GET',
+            success: function(data) {
+                // Hide the loading spinner
+                $('#loadingSpinner').hide();
+
+                if (data && data.query && data.results && data.results.length > 0) {
+                    // Display the search query
+                    $('#searchQuery').text(`Results for: "${data.query}"`).show();
+
+                    // Save results to localStorage
+                    localStorage.setItem(data.query, JSON.stringify(data.results));
+
+                    // Display the results
+                    displayResults(data.results);
+                } else {
+                    $('#errorMessage').text('No results found for the given query.').show();
+                }
+            },
+            error: function() {
+                // Hide the loading spinner and show error message
+                $('#loadingSpinner').hide();
+                $('#errorMessage').show();
+            }
+        });
+
+        // Function to display results
+        function displayResults(results) {
+            const resultsList = $('#resultsList');
+            resultsList.empty();
+            results.forEach(video => {
+                const li = $('<li></li>')
+                    .addClass('list-group-item video-item')
+                    .text(video.title)
+                    .attr('data-video-id', video.videoId);
+                resultsList.append(li);
+            });
+
+            // Show the results list
+            resultsList.show();
+
+            // Add click event to list items
+            $('.video-item').click(function() {
+                const videoId = $(this).attr('data-video-id');
+                const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                $('#videoIframe').attr('src', embedUrl);
+                $('#videoPlayer').show();
+                // Scroll to the video player
+                $('html, body').animate({
+                    scrollTop: $("#videoPlayer").offset().top
+                }, 500);
+            });
+        }
+
+        // Optional: Function to load cached results from localStorage (if any)
+        function loadCachedResults() {
+            // Iterate through all keys in localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const cachedResults = localStorage.getItem(key);
+                if (cachedResults) {
+                    try {
+                        const results = JSON.parse(cachedResults);
+                        if (Array.isArray(results) && results.length > 0) {
+                            // Display the search query
+                            $('#searchQuery').text(`Cached Results for: "${key}"`).show();
+
+                            // Display the results
+                            displayResults(results);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing cached results:', e);
+                    }
+                }
+            }
+        }
+
+        // Uncomment the following line if you want to load cached results on page load
+        // loadCachedResults();
+    });
+</script>
+
+</body>
+</html>

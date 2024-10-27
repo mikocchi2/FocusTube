@@ -1,0 +1,54 @@
+/* styles.css */
+
+/* Existing styles from previous updates... */
+
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.text-accent {
+    color: #bb86fc !important;
+}
+
+.text-accent:hover {
+    color: #9b65e6 !important;
+}
+
+.bg-secondary {
+    background-color: #1f1f1f !important;
+}
+
+.form-control {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    border: 1px solid #333333;
+}
+
+.form-control::placeholder {
+    color: #bbbbbb;
+}
+
+.btn-link {
+    color: #bb86fc;
+}
+
+.btn-link:hover {
+    color: #9b65e6;
+}
+
+.list-group-item {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    border: none;
+}
+
+.list-group-item:hover {
+    background-color: #333333;
+}
+
+.embed-responsive {
+    border: 1px solid #333333;
+}
+
+/* Additional styles if needed */

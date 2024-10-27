@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Client - Dark Mode</title>
+    <!-- Include Bootstrap CSS for styling -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">  
+    <style>
+        body {
+            background-color: #121212; /* Dark background */
+            color: #ffffff; /* Light text color */
+        }
+        .nav-container {
+            margin-top: 100px;
+        }
+        .nav-link {
+            font-size: 24px;
+            padding: 20px;
+            margin: 10px;
+            color: #ffffff; /* Light text color */
+            background-color: #1f1f1f; /* Dark button background */
+            border: none;
+        }
+        .nav-link:hover {
+            background-color: #333333; /* Slightly lighter on hover */
+        }
+        .search-bar {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form-control {
+            background-color: #1f1f1f; /* Dark input background */
+            color: #ffffff; /* Light text color */
+            border: 1px solid #333333;
+        }
+        .form-control::placeholder {
+            color: #bbbbbb;
+        }
+        .btn-info {
+            background-color: #bb86fc; /* Accent color */
+            border: none;
+            color: #ffffff;
+        }
+        .btn-info:hover {
+            background-color: #9b65e6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container text-center nav-container">
+    <h1 class="mb-5">Focus</h1>
+    <a href="playlists.html" class="btn nav-link">Playlists</a>
+    <a href="channels.html" class="btn nav-link">Channels</a>
+    <a href="oldsearch.html" class="btn nav-link">View Last Search</a>
+    <!-- index.html search form -->
+    <div class="search-bar mt-4">
+        <form action="search.html" method="get" class="form-inline justify-content-center">
+            <input type="text" name="query" class="form-control mr-2" placeholder="Search videos..." required>
+            <button type="submit" class="btn btn-info">Search</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- Include Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>  
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>  
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>  
+
+</body>
+</html>
