@@ -1,0 +1,4 @@
+Flask
+flask-dance
+flask-login
+google-api-python-client
